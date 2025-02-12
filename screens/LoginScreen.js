@@ -1,35 +1,46 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Alert } from 'react-native';
 import { TextInput, Button, ActivityIndicator, Text } from 'react-native-paper';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../firebaseConfig';  // Make sure this is correctly configured
+import { signInWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
+import { auth } from '../firebaseConfig'; // Ensure firebaseConfig.js is correctly set up
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true); // Start with loading true to check auth state
 
-  // Check for existing user session on component mount
+  // Check for an existing user session on component mount
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        navigation.navigate('MainScreen'); // Navigate directly to MainScreen if logged in
+        navigation.replace('MainScreen'); // Navigate directly if user is already logged in
+      } else {
+        setLoading(false); // Stop loading if no user is logged in
       }
     });
 
-    return () => unsubscribe(); // Cleanup listener when the component unmounts
+    return () => unsubscribe(); // Cleanup listener when component unmounts
   }, [navigation]);
 
   const handleLogin = async () => {
     setLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      navigation.navigate('MainScreen'); // Navigate to MainScreen on successful login
+      navigation.replace('MainScreen'); // Navigate to MainScreen on successful login
     } catch (error) {
       Alert.alert('Login Failed', error.message);
+      setLoading(false);
     }
-    setLoading(false);
   };
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#201a23" />
+        <Text>Checking authentication...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -81,13 +92,15 @@ const styles = StyleSheet.create({
   },
   button: {
     marginTop: 10,
-    backgroundColor: "#201a23", // Set button color to #201a23
+    backgroundColor: "#201a23",
   },
   textButton: {
     marginTop: 10,
-    borderColor: '#2374AB', // Set the border color when focused to #2374AB
+    borderColor: '#2374AB',
   },
-  inputFocused: {
-    borderWidth: 2, // Add border width to make it noticeable
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

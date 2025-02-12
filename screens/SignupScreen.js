@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, StyleSheet, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { Text, TextInput, Button, ActivityIndicator } from 'react-native-paper';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth, db } from '../firebaseConfig'; // Assuming you have Firebase Firestore setup for storing user data
+import { auth, db } from '../firebaseConfig'; // Ensure Firestore is initialized and exported in firebaseConfig.js
 import { doc, setDoc } from 'firebase/firestore';
 
 export default function SignupScreen({ navigation }) {
@@ -27,13 +27,14 @@ export default function SignupScreen({ navigation }) {
     try {
       // Create user with email and password
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      
-      // Save the username in Firestore (optional, you can also use Firebase Realtime Database)
       const user = userCredential.user;
+
+      // Save user details in Firestore under the "users" collection
       await setDoc(doc(db, 'users', user.uid), {
+        uid: user.uid,         // Ensure UID is stored
         username: username,
         email: email,
-        createdAt: new Date(),
+        createdAt: new Date().toISOString(),
       });
 
       Alert.alert("Success", "Account created successfully!");

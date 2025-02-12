@@ -1,15 +1,27 @@
-import { initializeApp } from "firebase/app";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { initializeApp, getApps, getApp } from "firebase/app";
+import { initializeAuth, getReactNativePersistence } from "firebase/auth";
+import { getFirestore } from "firebase/firestore"; // Import Firestore
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
+// Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyDJp4jK1s-oRzONIQxP3X7L7f9SyA7HcVk",
-  authDomain: "scrollerapp-73cbc.firebaseapp.com",
-  projectId: "scrollerapp-73cbc",
-  storageBucket: "scrollerapp-73cbc.appspot.com",
-  appId: "1:255017727911:ios:af799ff04e80cc67f7a882",
+  apiKey: "AIzaSyDisOpw0e79iAQRJlDxqm8HL3qy3kFhWJk",
+  authDomain: "imagescroller-c3336.firebaseapp.com",
+  projectId: "imagescroller-c3336",
+  storageBucket: "imagescroller-c3336.appspot.com",
+  messagingSenderId: "138610929585",
+  appId: "1:138610929585:web:1:138610929585:ios:d87129df9d1793e8331790",
 };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+// Initialize Firebase App
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
-export { app, auth };
+// Initialize Auth with AsyncStorage for persistence
+const auth = initializeAuth(app, {
+  persistence: getReactNativePersistence(AsyncStorage),
+});
+
+// Initialize Firestore
+const db = getFirestore(app);
+
+export { app, auth, db }; // Export Firestore instance
